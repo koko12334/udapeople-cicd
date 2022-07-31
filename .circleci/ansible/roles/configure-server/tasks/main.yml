@@ -1,18 +1,27 @@
 ---
+- name: "update packages"
+  become: true
+  apt:
+    update_cache: yes
+- name: "update packages"
+  become: true
+  apt:
+    upgrade: yes
 - name: "add node.js"
   become: true
   shell: |
     curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
     
-
 - name: "install node.js 13"
   become: true
   apt:
     name: ["node.js"]
     state: latest
     update_cache: yes
-
-- name: "install pm2e globally"
+- name: "install pm2 globally"
+  become: true
   npm:
     name: pm2
-    globale: yes 
+    global: yes 
+    production: yes
+    state: present
