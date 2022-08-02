@@ -134,7 +134,7 @@ jobs:
           command: |
             cd backend
             npm install
-            npm tes
+            npm test
       
             
   scan-frontend:
@@ -228,8 +228,8 @@ jobs:
       - destory-environment      
 
   run-migrations:
-    docker:
-      - image : cimg/node:13.8.0
+#    docker:
+#      - image : cimg/node:13.8.0
     steps:
       - checkout
       - install_awscli
