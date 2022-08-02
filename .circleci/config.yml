@@ -229,7 +229,7 @@ jobs:
 
   run-migrations:
     docker:
-      - image : cimage/node:13.8.0
+      - image : cimg/node:13.8.0
     steps:
       - checkout
       - install_awscli
@@ -250,7 +250,7 @@ jobs:
       - revert-migrations
   deploy-frontend:
     docker:
-      - image : cimage/node:13.8.0
+      - image : cimg/node:13.8.0
     steps:
       - checkout
       - install_awscli
@@ -279,9 +279,9 @@ jobs:
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - destroy-enviroment
       - revert-migrations                      
-#  deploy-backend:
-#    docker:
-#      - image : cimage/node:13.8.0
+  deploy-backend:
+    docker:
+      - image : cimg/node:13.8.0
      steps:
       - checkout
       - install_awscli
