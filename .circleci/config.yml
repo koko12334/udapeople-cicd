@@ -134,7 +134,7 @@ jobs:
           command: |
             cd backend
             npm install
-            npm test
+            npm tes
       
             
   scan-frontend:
@@ -248,9 +248,9 @@ jobs:
             fi
       - destroy-enviroment
       - revert-migrations
-  deploy-frontend:
-    docker:
-      - image : cimg/node:13.8.0
+#  deploy-frontend:
+#    docker:
+#      - image : cimg/node:13.8.0
     steps:
       - checkout
       - install_awscli
@@ -279,9 +279,9 @@ jobs:
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - destroy-enviroment
       - revert-migrations                      
-  deploy-backend:
-    docker:
-      - image : cimg/node:13.8.0
+#  deploy-backend:
+#    docker:
+#      - image : cimg/node:13.8.0
      steps:
       - checkout
       - install_awscli
@@ -315,7 +315,7 @@ jobs:
             cd .circleci/ansible
             cat project/.circleci/ansible/inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
-      - destroy-enviroment
+      # - destroy-enviroment
       - revert-migrations  
 
 #   smoke-test:
