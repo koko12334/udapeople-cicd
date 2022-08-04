@@ -7,17 +7,27 @@
   become: true
   apt:
     upgrade: yes
-- name: "add node.js"
+- name: "install dependencies."
   become: true
-  shell: |
-    curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+  apt:
+    name: ["nodejs", "npm"]
+    state: latest
+    update_cache: yes
+
+-   name: "install n"
+  become: true
+  npm:
+    name: n
+    global: yes
+    production: yes
+#- name: "add node.js"
+#  become: true
+#  shell: |
+#    curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
     
 - name: "install node.js 13"
   become: true
-  apt:
-    name: ["node.js"]
-    state: latest
-    update_cache: yes
+  shell: n 13.8.0
 - name: "install pm2 globally"
   become: true
   npm:
