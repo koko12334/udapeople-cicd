@@ -14,7 +14,7 @@
     state: latest
     update_cache: yes
 
--   name: "install n"
+- name: "install n"
   become: true
   npm:
     name: n
