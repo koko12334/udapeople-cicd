@@ -306,7 +306,7 @@ jobs:
          TYPEORM_PORT: "TYPEORM_PORT"
          TYPEORM_MIGRATIONS_DIR: "./migrations"
          TYPEORM_ENTITIES: "./modules/domain/**/*.entity{.ts,.js}"
-         TYPEORM_MIGRATIONS: "./migrations/*{.ts,.js}"
+         TYPEORM_MIGRATIONS: "./migrations/*.ts"
 
     steps:
       - checkout
@@ -314,7 +314,7 @@ jobs:
       - install_ansible
       - install_nodejs
       - add_ssh_keys:
-          fingerprints: ["3d:b0:37:65:e9:fb:00:bb:1d:ae:8a:97:0c:22:e3:5a"]
+          fingerprints: ["ee:66:23:6f:d4:88:c8:d9:31:18:ac:9f:89:f3:a0:46"]
       - attach_workspace:
           at: ~/
       - restore_cache:
@@ -340,7 +340,7 @@ jobs:
 
             export TYPEORM_MIGRATIONS_DIR=./migrations
             export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
-            export TYPEORM_MIGRATIONS=./migrations/*{.ts,.js}
+            export TYPEORM_MIGRATIONS=./migrations/*.ts
             
             cd .circleci/ansible
             cat inventory.txt
