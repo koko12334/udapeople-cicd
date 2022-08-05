@@ -287,7 +287,7 @@ jobs:
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
             
       
-      - destroy-environment
+      - destory-environment
       - revert-migrations 
 
 
@@ -347,7 +347,7 @@ jobs:
             ansible-playbook -i inventory.txt deploy-backend.yml
 
       
-      - destroy-environment
+      - destory-environment
       - revert-migrations  
 
 #   smoke-test:
