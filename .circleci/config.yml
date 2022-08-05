@@ -17,17 +17,20 @@ commands:
           name: install ansible v2
           command: |
             sudo apt update
-            sudo apt install software-properties-common
+            sudo apt install software-properties-common -y
             sudo add-apt-repository --yes --update ppa:ansible/ansible
-            sudo apt install ansible
+            sudo apt install ansible -y
   install_nodejs:
     description: install node.js 13
     steps:
       - run:
           name: install node.js 13
           command: |
-            curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
-            sudo apt install -y node.js
+            sudo apt-get update -y && curl -fsSL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+            sudo apt-get install -y nodejs 
+            sudo npm install --global n
+            sudo n 13.8.0 
+
 
 
 
@@ -249,7 +252,103 @@ jobs:
             fi
       - destory-environment
       - revert-migrations
-#      - revert-migrations  
+
+  deploy-frontend:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - install_awscli
+      - install_nodejs
+      - restore_cache:
+          keys: [frontend-deps]
+      - run:
+          name: Install dependencies
+          command: |
+            cd frontend
+            npm install
+      - run:
+          name: Get backend url
+          command: |
+            BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text)
+            export API_URL="http://${BACKEND_PUBLIC_IP}:3030"
+            echo "API_URL = ${API_URL}"
+            echo "API_URL=http://${BACKEND_PUBLIC_IP}:3030" >> frontend/.env
+            cat frontend/.env
+      - run:
+          name: Deploy frontend objects
+          command: |
+            cd frontend
+            npm install
+            npm run build
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+            
+      - notify_on_failure
+      - destroy-environment
+      - revert-migrations 
+
+
+  deploy-backend:
+    docker:
+      - image: cimg/base:stable
+        environment:
+         NODE_ENV: "production"
+         VERSION: "1"
+         ENVIRONMENT: "production"
+         TYPEORM_CONNECTION: "TYPEORM_CONNECTION"
+         TYPEORM_HOST: "TYPEORM_HOST"
+         TYPEORM_USERNAME: "TYPEORM_USERNAME"
+         TYPEORM_PASSWORD: "TYPEORM_PASSWORD"
+         TYPEORM_DATABASE: "TYPEORM_DATABASE"
+         TYPEORM_PORT: "TYPEORM_PORT"
+         TYPEORM_MIGRATIONS_DIR: "./migrations"
+         TYPEORM_ENTITIES: "./modules/domain/**/*.entity{.ts,.js}"
+         TYPEORM_MIGRATIONS: "./migrations/*{.ts,.js}"
+
+    steps:
+      - checkout
+      - install_awscli
+      - install_ansible
+      - install_nodejs
+      - add_ssh_keys:
+          fingerprints: ["3d:b0:37:65:e9:fb:00:bb:1d:ae:8a:97:0c:22:e3:5a"]
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          keys: [backend-deps]
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt -y install tar gzip curl
+
+      - run:
+          name: Package backend
+          command: |
+            cd backend
+            npm install
+            npm run build
+            cd ..
+            tar -C backend -czvf artifact.tar.gz .
+            cp artifact.tar.gz .circleci/ansible/roles/deploy/files
+           
+      - run:
+          name: Deploy backend
+          command: |
+
+            export TYPEORM_MIGRATIONS_DIR=./migrations
+            export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
+            export TYPEORM_MIGRATIONS=./migrations/*{.ts,.js}
+            
+            cd .circleci/ansible
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
+
+      - notify_on_failure
+      - destroy-environment
+      - revert-migrations  
 
 #   smoke-test:
 #     docker:
@@ -331,10 +430,10 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
-      # - deploy-frontend:
-      #  requires: [run-migrations]
-      # # - deploy-backend:
-      # #     requires: [run-migrations]      
+      - deploy-frontend:
+          requires: [run-migrations]
+     - deploy-backend:
+          requires: [run-migrations]      
 
       #     requires: [build-backend]
       # - scan-frontend:
