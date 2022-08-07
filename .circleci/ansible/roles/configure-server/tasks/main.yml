@@ -1,4 +1,12 @@
 ---
+- name: "update packages"
+  become: true
+  apt:
+    update_cache: yes
+- name: "update packages"
+  become: true
+  apt:
+    upgrade: yes
 - name: "add node.js"
   become: true
   shell: |
@@ -10,10 +18,12 @@
     
 
 - name: "install pm2 globally"
+  become: true
   npm:
     name: pm2
     global: yes 
-  
+    production: yes
+    state: present
 
 
 
