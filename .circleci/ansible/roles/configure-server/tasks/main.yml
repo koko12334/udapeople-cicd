@@ -1,37 +1,63 @@
 ---
-- name: "update packages"
+- name: "add node.js"
   become: true
-  apt:
-    update_cache: yes
-- name: "update packages"
-  become: true
-  apt:
-    upgrade: yes
-- name: "install dependencies."
-  become: true
-  apt:
-    name: ["nodejs", "npm"]
-    state: latest
-    update_cache: yes
+  shell: |
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+    sudo apt install -y nodejs 
+    sudo npm install --global n
+    sudo n 13.8.0 
 
-- name: "install n"
-  become: true
+    
+
+- name: "install pm2 globally"
   npm:
-    name: n
-    global: yes
-    production: yes
+    name: pm2
+    global: yes 
+  
+
+
+
+
+
+
+
+
+
+
+
+#- name: "update packages"
+#  become: true
+#  apt:
+#    update_cache: yes
+#- name: "update packages"
+#  become: true
+#  apt:
+#    upgrade: yes
+#- name: "install dependencies."
+#  become: true
+#  apt:
+#    name: ["nodejs", "npm"]
+#    state: latest
+#    update_cache: yes
+
+#- name: "install n"
+#  become: true
+#  npm:
+#    name: n
+    #global: yes
+#    production: yes
 #- name: "add node.js"
 #  become: true
 #  shell: |
 #    curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
     
-- name: "install node.js 13"
-  become: true
-  shell: n 13.8.0
-- name: "install pm2 globally"
-  become: true
-  npm:
-    name: pm2
-    global: yes 
-    production: yes
-    state: present
+#- name: "install node.js 13"
+#  become: true
+#  shell: n 13.8.0
+#- name: "install pm2 globally"
+#  become: true
+#  npm:
+#    name: pm2
+#    global: yes 
+#    production: yes
+#    state: present
