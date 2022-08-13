@@ -230,7 +230,7 @@ jobs:
       - destory-environment      
   run-migrations:
     docker:
-      - image: sleavely/node-awscli:12.x
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - install_awscli
