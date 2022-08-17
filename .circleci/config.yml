@@ -316,7 +316,7 @@ jobs:
       - install_ansible
       - install_nodejs
       - add_ssh_keys:
-          fingerprints: ["da:14:d6:34:f5:de:4d:bd:43:7d:a0:9e:65:e2:fa:3"]
+          fingerprints: ["da:14:d6:34:f5:de:4d:bd:43:7d:a0:9e:65:e2:fa:3f"]
       - attach_workspace:
           at: ~/
       - restore_cache:
@@ -384,7 +384,7 @@ jobs:
             else
               exit 1
             fi
-      - destroy-environment
+      - destory-environment
       - revert-migrations  
 
 
