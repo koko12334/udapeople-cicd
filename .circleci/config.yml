@@ -218,7 +218,7 @@ jobs:
       - install_awscli
       - install_ansible
       - add_ssh_keys:
-          fingerprints: ["ee:66:23:6f:d4:88:c8:d9:31:18:ac:9f:89:f3:a0:46"]
+          fingerprints: ["da:14:d6:34:f5:de:4d:bd:43:7d:a0:9e:65:e2:fa:3f"]
       - attach_workspace:
           at: ~/             
       - run:
@@ -316,7 +316,7 @@ jobs:
       - install_ansible
       - install_nodejs
       - add_ssh_keys:
-          fingerprints: ["ee:66:23:6f:d4:88:c8:d9:31:18:ac:9f:89:f3:a0:46"]
+          fingerprints: ["da:14:d6:34:f5:de:4d:bd:43:7d:a0:9e:65:e2:fa:3"]
       - attach_workspace:
           at: ~/
       - restore_cache:
@@ -347,48 +347,49 @@ jobs:
             cd .circleci/ansible
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
-
-      
       - destory-environment
+      - revert-migrations 
+
+  smoke-test:
+    docker:
+      - image: cimg/base:stable 
+    steps:
+      - checkout
+      - install_awscli
+      - install_nodejs
+      - run:
+          name: Backend smoke test.
+          command: |
+            export BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text)
+
+            export API_URL="http://${BACKEND_PUBLIC_IP}:3030"
+            echo "${API_URL}"
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+              exit 0
+            else
+              exit 1
+            fi
+      - run:
+          name: Frontend smoke test.
+          command: |
+            FRONTEND_WEBSITE=http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-${AWS_DEFAULT_REGION}.amazonaws.com
+            echo ${FRONTEND_WEBSITE} 
+            if curl -s ${FRONTEND_WEBSITE} | grep "Welcome"
+            then
+              exit 0
+            else
+              exit 1
+            fi
+      - destroy-environment
       - revert-migrations  
 
-#   smoke-test:
-#     docker:
-#       # Lightweight Docker image 
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # your code here
-#       - run:
-#           name: Get backend url
-#           command: |
-#             # your code here
-#       - run:
-#           name: Backend smoke test.
-#           command: |
-#             # your code here
-#       - run:
-#           name: Frontend smoke test.
-#           command: |
-#             # your code here
-#       # Here's where you will add some code to rollback on failure  
 
-#   cloudfront-update:
-#     docker:
-#       # Docker image here that supports AWS CLI
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # your code here
-#       - run:
-#           name: Update cloudfront distribution
-#           command: |
-#             # your code here
-#       # Here's where you will add some code to rollback on failure  
+            
+
 
 # cleanup:
 #     docker:
@@ -436,7 +437,8 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]      
-
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
       #     requires: [build-backend]
       # - scan-frontend:
       #     requires: [build-frontend]
@@ -451,8 +453,6 @@ workflows:
       #     requires: [configure-infrastructure]
       # - deploy-frontend:
    
-      # - smoke-test:
-      #     requires: [deploy-backend, deploy-frontend]
       # - cloudfront-update:
           # requires: [smoke-test]
       # - cleanup:
